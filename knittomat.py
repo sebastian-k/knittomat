@@ -48,10 +48,10 @@ Start the script with argument -n for "no sinus"
 
 import sys
 import math
-
 import argparse
 
 parser = argparse.ArgumentParser()
+
 parser.add_argument("-a", "--angle", type=float, help="Which angle does the edge you are knitting into have?")
 parser.add_argument("-n",
                     "--no_sinus",
@@ -59,49 +59,60 @@ parser.add_argument("-n",
                     help="Flag: Do you not want to enter the target stitchcount yourself? Default: %(default)s")
 
 args = parser.parse_args()
+
+# args
 no_sinus = args.no_sinus
 angle = args.angle
 
 # let's assume you knit a typical triangular shape,
 # where you decrease every second row.
 # this will result in a 45° angle of the decrease edge.
-if angle:
-    edgeangle = angle
-else:
+if not angle:
     edgeangle = 45
+# if you have a different decrease pattern you'll have a different angle, which you can pass as argument
+else:
+    edgeangle = angle
 
-# now, if you want to knit into this 45° edge by following it
-# perpendicular, you must increase the stitches in order to maintain the overall height.
-# to do that, you have to divide the edge stitches by the sinus of 45°.
+# now, if you pick up stitches along this diagonal edge and continue knitting parallel to that edge,
+# you must increase the stitches in order to maintain the overall height.
+# to do that, you have to divide the edge stitches by the sinus of that angle.
 sinus = math.sin(math.radians(edgeangle))
 
 # so first we should know how many edge stitches there are
-# (with a triangle shape it will be half the stitches of the triangle bottom row)
-old_stitches = int(input(" Amount of bound off edge stitches: "))
+# (with a triangle shape and 45 degree angle it would be half the stitches of the triangle bottom row)
+current_stitches = int(input(" Amount of bound off edge stitches: "))
 
 # now we can calculate the target amount of stitches
-new_stitches = round(old_stitches / sinus)
-new_stitches_phrase = " to maintain the same overall height."
+target_stitches = round(current_stitches / sinus)
+# give it a custom phrase for the string output
+target_stitches_phrase = " to maintain the same overall height."
+
+# in case you don't use the triangle angle at all
 if no_sinus:
-    new_stitches = int(input(" Amount of new stitches: "))
-    new_stitches_phrase = "."
-increases = new_stitches - old_stitches
-print("\n")
-print(f' c = {old_stitches}: Current amount of stitches.')
-print(f' t = {new_stitches}: Target amount of stitches.')
-print(f' i = {increases}: Amount of increase stitches.')
+    target_stitches = int(input(" Amount of new stitches: "))
+    target_stitches_phrase = "."
+
+# now we can calculate the amount of increases
+increases = target_stitches - current_stitches
 
 # the gaps are the available gaps between existing stitches (--> minus the last stitch)
 # in these gaps you can work the increases
-gaps = old_stitches - 1
-print(f' g = {gaps}: Available gaps between your existing stitches where you can work your increases.\n')
+gaps = current_stitches - 1
 
-# the tricky thing is to find out how to distribute them evenly
+# the somewhat tricky thing is to find out how to distribute the increase stitches evenly
 distribution = int(gaps / increases)
 
 # if you can distribute them in such a way that there is no rest it's easy
 # otherwise you need to distribute the "uneven" rest of stitches across the increases
 rest = gaps % increases
+
+# and now we can print all that shit!
+
+print("\n")
+print(f' c = {current_stitches}: Current amount of stitches.')
+print(f' t = {target_stitches}: Target amount of stitches.')
+print(f' i = {increases}: Amount of increase stitches.')
+print(f' g = {gaps}: Available gaps between your existing stitches where you can work your increases.\n')
 
 if increases >= gaps:
     print(
