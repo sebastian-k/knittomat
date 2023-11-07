@@ -3,12 +3,15 @@ It seems to work so far, but in some cases it might not behave quite correct.
 
 Case 1:
 You have knitted a triangle shape with 45° angles and want to attach to one of the 45° angle sides.
+```
         /\
        /||\
     a /||||\ b
      /|||h||\
  45 ---------- 45
          C
+```
+```
 
     |\
     ||\
@@ -16,19 +19,21 @@ You have knitted a triangle shape with 45° angles and want to attach to one of 
     ||||\
 90  ------ 45
     C
+```
 
 If you remember trigonometry, the long side is C, the other 2 sides are a and b.
 Or you have half a triangle with one 90° angle and one 45° angle. 
 So let's say you want to knit into b.
 To maintain the same height of the triangle (h) you need to increase the stitch count along b.
 
+```
     |\/ / / /           |
     ||\/ / /            |
   h |||\b / /   --> ... h
     ||||\/ /            |
     ------
     C
-
+```
 In a triangle with a 45° angle you have to increase by dividing the edge stitches of b by the sinus of 45°, which is about 0.707.
 That will give you the amount of needed stitches.
 The script with also try to calculate the pattern for how to increase.
