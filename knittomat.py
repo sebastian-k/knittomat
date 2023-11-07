@@ -76,25 +76,26 @@ sinus = math.sin(math.radians(edgeangle))
 
 # so first we should know how many edge stitches there are
 # (with a triangle shape it will be half the stitches of the triangle bottom row)
-old_stitches = int(input("amount of bound off edge stitches: "))
+old_stitches = int(input(" Amount of bound off edge stitches: "))
 
 # now we can calculate the target amount of stitches
 new_stitches = round(old_stitches / sinus)
 new_stitches_phrase = " to maintain the same overall height."
 if no_sinus:
-    new_stitches = int(input("amount of new stitches: "))
+    new_stitches = int(input(" Amount of new stitches: "))
     new_stitches_phrase = "."
 increases = new_stitches - old_stitches
 print("\n")
-print(f'{old_stitches} is the current amount of stitches')
-print(
-    f'{new_stitches} is the target amount of stitches you need to increase{new_stitches_phrase}')
-print(f'{increases} is the amount of increase stitches')
+print(f' c = {old_stitches}: Current amount of stitches.')
+print(f' t = {new_stitches}: Target amount of stitches.')
+print(f' i = {increases}: Aamount of increase stitches.')
 
 # the gaps are the available gaps between existing stitches (--> minus the last stitch)
 # in these gaps you can work the increases
 gaps = old_stitches - 1
-print(f'there are {gaps} available gaps between your existing stitches.\n')
+print(f' g = {gaps}: Available gaps between your existing stitches where you can work your increases.\n')
+
+print(" -->\n")
 
 # the tricky thing is to find out how to distribute them evenly
 distribution = int(gaps / increases)
@@ -106,21 +107,15 @@ rest = gaps % increases
 if distribution == 1:
     phrase = ""
 else:
-    phrase = f'{distribution}.'
+    phrase = f'{distribution}. '
 if rest <= 1:
     # phrase it differently if distribution is 1
-    print(f'so, make a new stitch after each {phrase} exisiting stitch.\n')
-    # quick summary
-    print(f'C = {old_stitches}\ng = {gaps}\na = {new_stitches}\ni = {increases}\nd = {distribution}')
+    print(f' d = {distribution}: Make a new stitch after each {phrase}existing stitch.\n')
 else:
     # this is a more complicated case
-    print(f'in theory you could make an increase after every {phrase}stitch.')
-    print(f'however, that would be {rest} stitches too much.')
+    print(f' In theory you could make an increase after every {phrase}stitch.')
+    print(f' However, you would end up with {rest} stitches too much.')
     # we need to also distribute the rest evenly
     rest_distribution = round(increases / rest) + 1
-    print(f'so, follow the pattern of an increase after each {phrase}stitch,')
-    print(f'but skip one extra stitch after each {rest_distribution}. increase\n')
-    # quick summary
-    print(
-        f'C = {old_stitches}\ng = {gaps}\na = {new_stitches}\ni = {increases}\n\nd = {distribution}\ns = {rest_distribution}'
-    )
+    print(f' So, follow the pattern of an increase after each {phrase}stitch,')
+    print(f' but work one regular stitch more after each {rest_distribution}. increase.\n')
