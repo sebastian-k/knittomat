@@ -1,7 +1,7 @@
 This is meant as a simple tool to calculate the needed amount of increases.
 It seems to work so far, but in some cases it might not behave quite correct.
 
-## Case 1:
+### Case 1:
 You have knitted a triangle shape with 45° angles and want to attach to one of the 45° angle sides.
 ```
         /\
@@ -40,13 +40,15 @@ That will give you the amount of needed stitches.
 The script will also try to calculate the pattern for how to increase.
 
 
-## Case 2:
+### Case 2:
 Your used a different decrease pattern, so the angle between _C_ and _b_ is different.
-Start the script with the argument -a and give it the angle.
+Start the script with the argument -a and give it the angle:
+ 
 `python3 knittomat.py -a 23`
 
-## Case 3:
+### Case 3:
 You just want to know how to increase evenly from stitchcount A to stitchcount B.
 In that case you don't care about any angle or sinus.
-Start the script with argument -n for "no sinus"
+Start the script with argument -n for "no sinus":
+ 
 `python3 knittomat.py -n`
