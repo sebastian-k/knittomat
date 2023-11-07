@@ -35,7 +35,7 @@ The script with also try to calculate the pattern for how to increase.
 
 
 Case 2:
-Your used a different decrease pattern, so the angle between C and b is different.
+Your used a different decrease pattern, so the angle between C and b is not 45°.
 Start the script with the argument -a and give it the angle.
 (example: python3 knittomat.py -a 23)
 
@@ -46,12 +46,13 @@ Start the script with argument -n for "no sinus"
 (example: python3 knittomat.py -n)
 """
 
+import sys
 import math
 
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-a", "--angle", type=int, help="Which angle does the edge you are knitting into have?")
+parser.add_argument("-a", "--angle", type=float, help="Which angle does the edge you are knitting into have?")
 parser.add_argument("-n",
                     "--no_sinus",
                     action="store_true",
@@ -88,14 +89,12 @@ increases = new_stitches - old_stitches
 print("\n")
 print(f' c = {old_stitches}: Current amount of stitches.')
 print(f' t = {new_stitches}: Target amount of stitches.')
-print(f' i = {increases}: Aamount of increase stitches.')
+print(f' i = {increases}: Amount of increase stitches.')
 
 # the gaps are the available gaps between existing stitches (--> minus the last stitch)
 # in these gaps you can work the increases
 gaps = old_stitches - 1
 print(f' g = {gaps}: Available gaps between your existing stitches where you can work your increases.\n')
-
-print(" -->\n")
 
 # the tricky thing is to find out how to distribute them evenly
 distribution = int(gaps / increases)
@@ -104,10 +103,18 @@ distribution = int(gaps / increases)
 # otherwise you need to distribute the "uneven" rest of stitches across the increases
 rest = gaps % increases
 
+if increases >= gaps:
+    print(
+        "you have more increases than available gaps. this is what the script doesn't handle yet. figure it out yourself!:)\n"
+    )
+    sys.exit()
 if distribution == 1:
     phrase = ""
 else:
     phrase = f'{distribution}. '
+
+print(" -->\n")
+
 if rest <= 1:
     # phrase it differently if distribution is 1
     print(f' d = {distribution}: Make a new stitch after each {phrase}existing stitch.\n')

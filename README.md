@@ -24,7 +24,7 @@ You have knitted a triangle shape with 45° angles and want to attach to one of 
 If you remember trigonometry, the long side is _C_, the other 2 sides are _a_ and _b_.
 Or you have half a triangle with one 90° angle and one 45° angle. 
 
-So let's say you want to knit into _b_.
+So let's say you want to knit into _b_ by picking up stitches, resulting in rows that are parallel to _b_.
 To maintain the same height of the triangle (_h_) you need to increase the stitch count along _b_.
 
 ```
@@ -41,7 +41,7 @@ The script will also try to calculate the pattern for how to increase.
 
 
 ### Case 2:
-Your used a different decrease pattern, so the angle between _C_ and _b_ is different.
+Your used a different decrease pattern, so the angle between _C_ and _b_ is not 45°.
 Start the script with the argument -a and give it the angle:
  
 `python3 knittomat.py -a 23`
