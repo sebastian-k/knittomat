@@ -1,139 +1,177 @@
-"""
-This is meant as a simple tool to calculate the needed amount of increases.
-
-Case 1:
-You have knitted a triangle shape with 45° angles and want to attach to one of the 45° angle sides.
-        /\
-       /||\
-    a /||||\ b
-     /|||h||\
- 45 ---------- 45
-         C
-
-    |\
-    ||\
-  h |||\ b
-    ||||\
-90  ------ 45
-    C
-
-If you remember trigonometry, the long side is C, the other 2 sides are a and b.
-Or you have half a triangle with one 90° angle and one 45° angle. 
-So let's say you want to knit into b.
-To maintain the same height of the triangle (h) you need to increase the stitch count along b.
-
-    |\/ / / /           |
-    ||\/ / /            |
-  h |||\b / /   --> ... h
-    ||||\/ /            |
-    ------
-    C
-
-In a triangle with a 45° angle you have to increase by dividing the edge stitches of b by the sinus of 45°, which is about 0.707.
-That will give you the amount of needed stitches.
-The script with also try to calculate the pattern for how to increase.
-
-
-Case 2:
-Your used a different decrease pattern, so the angle between C and b is not 45°.
-Start the script with the argument -a and give it the angle.
-(example: python3 knittomat.py -a 23)
-
-Case 3:
-You just want to know how to increase evenly from stitchcount A to stitchcount B.
-In that case you don't care about any angle or sinus.
-Start the script with argument -n for "no sinus"
-(example: python3 knittomat.py -n)
-"""
-
-import sys
 import math
-import argparse
+import tkinter as tk
+from tkinter import ttk
 
-parser = argparse.ArgumentParser()
 
-parser.add_argument("-a", "--angle", type=float, help="Which angle does the edge you are knitting into have?")
-parser.add_argument("-n",
-                    "--no_sinus",
-                    action="store_true",
-                    help="Flag: Do you not want to enter the target stitchcount yourself? Default: %(default)s")
+def toggle_target_stitches_entry():
+    if use_target_stitches.get():
+        entry_target_stitches.grid(row=3, column=1, sticky="ew")
+    else:
+        entry_target_stitches.grid_remove()
+        entry_target_stitches.delete(0, tk.END)  # Reset to default value
 
-args = parser.parse_args()
 
-# args
-no_sinus = args.no_sinus
-angle = args.angle
+def toggle_angle_entry():
+    if use_angle.get():
+        entry_angle.grid(row=2, column=1, sticky="ew")
+    else:
+        entry_angle.grid_remove()
+        entry_angle.delete(0, tk.END)  # Reset to default value
 
-# let's assume you knit a typical triangular shape,
-# where you decrease every second row.
-# this will result in a 45° angle of the decrease edge.
-if not angle:
-    edgeangle = 45
-# if you have a different decrease pattern you'll have a different angle, which you can pass as argument
-else:
-    edgeangle = angle
 
-# now, if you pick up stitches along this diagonal edge and continue knitting parallel to that edge,
-# you must increase the stitches in order to maintain the overall height.
-# to do that, you have to divide the edge stitches by the sinus of that angle.
-sinus = math.sin(math.radians(edgeangle))
+def calculate():
+    current_stitches = int(entry_current_stitches.get())
+    edgeangle = 45  # Default angle (45 degrees)
 
-# so first we should know how many edge stitches there are
-# (with a triangle shape and 45 degree angle it would be half the stitches of the triangle bottom row)
-current_stitches = int(input(" Amount of bound off edge stitches: "))
+    if use_angle.get():
+        edgeangle = float(entry_angle.get())
 
-# now we can calculate the target amount of stitches
-target_stitches = round(current_stitches / sinus)
-# give it a custom phrase for the string output
-target_stitches_phrase = " to maintain the same overall height."
+    try:
+        target_stitches = int(entry_target_stitches.get())
+    except ValueError:
+        target_stitches = round(current_stitches / math.sin(math.radians(edgeangle)))
 
-# in case you don't use the triangle angle at all
-if no_sinus:
-    target_stitches = int(input(" Amount of new stitches: "))
-    target_stitches_phrase = "."
+    # main calculations
+    increases = target_stitches - current_stitches
+    gaps = current_stitches - 1
+    distribution = int(gaps / increases)
+    rest = gaps % increases
 
-# now we can calculate the amount of increases
-increases = target_stitches - current_stitches
+    if distribution == 1:
+        phrase = ""
+    else:
+        phrase = f'{distribution}. '
 
-# the gaps are the available gaps between existing stitches (--> minus the last stitch)
-# in these gaps you can work the increases
-gaps = current_stitches - 1
+    # Display the result within the GUI
+    result_label.config(
+        text=f'Result:\n'
+        f'{current_stitches}: Current amount of stitches.\n'
+        f'{target_stitches}: Target amount of stitches.\n'
+        f'{increases}: Amount of increase stitches.\n'
+        f'{gaps}: Available gaps between your existing stitches where you can work your increases.\n\n')
 
-# the somewhat tricky thing is to find out how to distribute the increase stitches evenly
-distribution = int(gaps / increases)
+    if increases >= gaps:
+        result_label.config(
+            text=result_label.cget("text") +
+            "You have equal or more increases than available gaps. This case is not handled by the script.")
+    elif rest <= 1:
+        result_label.config(text=result_label.cget("text") +
+                            f'Make a new stitch after each {phrase}existing stitch.')
+    else:
+        rest_distribution = round(increases / rest) + 1
+        result_label.config(text=result_label.cget("text") +
+                            f'In theory, you could make an increase after every {distribution} stitches.\n'
+                            f'However, you would end up with {rest} stitches too much.\n'
+                            f'So, follow the pattern of an increase after each {distribution} stitches,\n'
+                            f'but work one regular stitch more after each {rest_distribution} increase.')
 
-# if you can distribute them in such a way that there is no rest it's easy
-# otherwise you need to distribute the "uneven" rest of stitches across the increases
-rest = gaps % increases
 
-# and now we can print all that shit!
+def display_help():
+    # Create a new window for help text
+    help_window = tk.Toplevel(app)
+    help_window.title("Help")
 
-print("\n")
-print(f' c = {current_stitches}: Current amount of stitches.')
-print(f' t = {target_stitches}: Target amount of stitches.')
-print(f' i = {increases}: Amount of increase stitches.')
-print(f' g = {gaps}: Available gaps between your existing stitches where you can work your increases.\n')
+    help_text = '''
+    Case 1:
+    You have knitted a triangle shape with a 45° angle and want to pick up stitches along the 45° angle side,
+    and then continue knitting parallel to that edge, but maintaining the same overall height.
+    (Effectively creating a trapezoid.)
 
-if increases >= gaps:
-    print(
-        "you have more increases than available gaps. this is what the script doesn't handle yet. figure it out yourself!:)\n"
-    )
-    sys.exit()
-if distribution == 1:
-    phrase = ""
-else:
-    phrase = f'{distribution}. '
+    A bit of trigonometry: the long side of a right-angled triangle is C, the other 2 sides are a and b.
+    (Or you have half a triangle with one 90° angle and one 45° angle. Let's call that side still b)
+    So let's say you want to knit into b.
+    To maintain the same height of the triangle (h) you need to increase the stitch count along b.
 
-print(" -->\n")
+    In a triangle with a 45° angle you have to increase by dividing the edge stitches of b by the sinus of 45°, which is about 0.707.
+    That will give you the amount of needed stitches.
+    The script will also try to calculate the pattern for how to distribute the increases.
 
-if rest <= 1:
-    # phrase it differently if distribution is 1
-    print(f' d = {distribution}: Make a new stitch after each {phrase}existing stitch.\n')
-else:
-    # this is a more complicated case
-    print(f' In theory you could make an increase after every {phrase}stitch.')
-    print(f' However, you would end up with {rest} stitches too much.')
-    # we need to also distribute the rest evenly
-    rest_distribution = round(increases / rest) + 1
-    print(f' So, follow the pattern of an increase after each {phrase}stitch,')
-    print(f' but work one regular stitch more after each {rest_distribution}. increase.\n')
+    Case 2:
+    Your used a different decrease pattern, so the angle between C and b is not 45°.
+    -> Enable the checkbox where you can enter a custom angle.
+
+    Case 3:
+    You just want to know how to increase evenly from stitch count A to stitch count B.
+    -> Enable the checkbox to enter a custom target stitch count.
+    '''
+
+    help_label = ttk.Label(help_window, text=help_text, justify="left")
+    help_label.pack()
+
+
+# Create the main application window
+app = tk.Tk()
+app.title("Knittomat")
+
+# Create a frame for padding
+padding_frame = ttk.Frame(app, padding=20)
+padding_frame.grid(row=0, column=0)
+
+# Create labels, entry fields, and a result label within the frame
+style = ttk.Style()
+style.configure("TLabel", padding=(10, 2))
+style.configure("TEntry", padding=(10, 2))
+style.configure("TCheckbutton", padding=(10, 2))
+
+# Current Stitches
+label_current_stitches = ttk.Label(padding_frame, text="Amount of bound off edge stitches:")
+entry_current_stitches = ttk.Entry(padding_frame)
+entry_current_stitches.insert(0, 10)  # Set default value
+
+# Target Stitches
+label_target_stitches = ttk.Label(padding_frame, text="Target amount of stitches:")
+entry_target_stitches = ttk.Entry(padding_frame)
+
+# Angle
+label_angle = ttk.Label(padding_frame, text="Angle (in degrees):")
+entry_angle = ttk.Entry(padding_frame)
+
+# Layout
+label_current_stitches.grid(row=0, column=0, sticky="w")
+entry_current_stitches.grid(row=0, column=1, sticky="ew")
+
+# Checkbox for custom angle
+use_angle = tk.IntVar()
+use_angle_check = ttk.Checkbutton(
+    padding_frame,
+    text="Use a custom angle (in degrees):",
+    variable=use_angle,
+    command=toggle_angle_entry,
+)
+use_angle_check.grid(row=2, column=0, columnspan=2, sticky="w")
+
+# Initially, hide the angle input field
+entry_angle.grid_remove()
+# Checkbox to enable/disable target stitches input
+use_target_stitches = tk.IntVar()
+use_target_stitches_check = ttk.Checkbutton(
+    padding_frame,
+    text="Use a custom target stitch count:",
+    variable=use_target_stitches,
+    command=toggle_target_stitches_entry,
+)
+use_target_stitches_check.grid(row=3, column=0, columnspan=2, sticky="w")
+
+# Initially, hide the target stitches input field
+entry_target_stitches.grid_remove()
+
+calculate_button = ttk.Button(
+    padding_frame,
+    text="Calculate",
+    command=calculate,
+)
+calculate_button.grid(row=4, column=0, columnspan=2, sticky="w")
+# "Help" button to display help text
+
+help_button = ttk.Button(padding_frame, text="Help / Instructions", command=display_help)
+help_button.grid(row=4, column=1, columnspan=2)
+
+result_label = ttk.Label(
+    padding_frame,
+    text="Result:",
+)
+result_label.grid(row=5, column=0, columnspan=2, sticky="w")
+
+padding_frame.grid_rowconfigure(4, minsize=100)
+
+app.mainloop()
