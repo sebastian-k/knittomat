@@ -39,31 +39,36 @@ def calculate():
 
     if distribution == 1:
         phrase = ""
+        stitchphrase = "stitch"
     else:
         phrase = f'{distribution}. '
+        stitchphrase = "stitches"
 
     # Display the result within the GUI
     result_label.config(
-        text=f'Result:\n'
-        f'{current_stitches}: Current amount of stitches.\n'
-        f'{target_stitches}: Target amount of stitches.\n'
-        f'{increases}: Amount of increase stitches.\n'
-        f'{gaps}: Available gaps between your existing stitches where you can work your increases.\n\n')
+        text=f'{target_stitches} - Target amount of stitches.\n'
+        f'{gaps} - Available gaps between your existing stitches where you can work your increases.\n'
+        f'{increases} - Amount of increase stitches.\n\n'
+    )
 
     if increases >= gaps:
         result_label.config(
             text=result_label.cget("text") +
-            "You have equal or more increases than available gaps. This case is not handled by the script.")
+            "You have equal or more increases than available gaps. This case is not handled by the script."
+        )
     elif rest <= 1:
-        result_label.config(text=result_label.cget("text") +
-                            f'Make a new stitch after each {phrase}existing stitch.')
+        result_label.config(
+            text=result_label.cget("text") + f'Make a new stitch after each {phrase}existing stitch.'
+        )
     else:
         rest_distribution = round(increases / rest) + 1
-        result_label.config(text=result_label.cget("text") +
-                            f'In theory, you could make an increase after every {distribution} stitches.\n'
-                            f'However, you would end up with {rest} stitches too much.\n'
-                            f'So, follow the pattern of an increase after each {distribution} stitches,\n'
-                            f'but work one regular stitch more after each {rest_distribution} increase.')
+        result_label.config(
+            text=result_label.cget("text") +
+            f'In theory, you could make an increase after every {phrase}stitch.\n'
+            f'However, you would end up with {rest} stitches too much.\n'
+            f'So, follow the pattern of an increase after each {phrase}stitch,\n'
+            f'but work one regular stitch more after each {rest_distribution}. increase.'
+        )
 
 
 def display_help():
@@ -168,7 +173,7 @@ help_button.grid(row=4, column=1, columnspan=2)
 
 result_label = ttk.Label(
     padding_frame,
-    text="Result:",
+    text="",
 )
 result_label.grid(row=5, column=0, columnspan=2, sticky="w")
 
