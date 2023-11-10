@@ -39,10 +39,8 @@ def calculate():
 
     if distribution == 1:
         phrase = ""
-        stitchphrase = "stitch"
     else:
         phrase = f'{distribution}. '
-        stitchphrase = "stitches"
 
     # Display the result within the GUI
     result_label.config(
