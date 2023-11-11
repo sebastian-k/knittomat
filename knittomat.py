@@ -26,47 +26,107 @@ def calculate():
     if use_angle.get():
         edgeangle = float(entry_angle.get())
 
+    # if the user entered a custom stitchcount we will use that,
+    # otherwise we calculate it by using the sinus
     try:
-        target_stitches = int(entry_target_stitches.get())
+        target_stitches = int(entry_target_stitches.get())  # use custom stitchcount
     except ValueError:
-        target_stitches = round(current_stitches / math.sin(math.radians(edgeangle)))
+        target_stitches = round(current_stitches / math.sin(math.radians(edgeangle)))  # use sinus
 
     # main calculations
+    # the EASY part
+    # ###############
+
+    # increases and gaps
     increases = target_stitches - current_stitches
+    # the increases are typciall worked between two existing stitches.
+    # so we have to leave out the very last stitch.
     gaps = current_stitches - 1
-    distribution = int(gaps / increases)
-    rest = gaps % increases
 
-    if distribution == 1:
-        phrase = ""
-    else:
-        phrase = f'{distribution}. '
-
-    # Display the result within the GUI
+    # so far, so easy
+    # let's display this in the GUI
     result_label.config(
         text=f'{target_stitches} - Target amount of stitches.\n'
         f'{gaps} - Available gaps between your existing stitches where you can work your increases.\n'
         f'{increases} - Amount of increase stitches.\n\n'
     )
 
-    if increases >= gaps:
-        result_label.config(
-            text=result_label.cget("text") +
-            "You have equal or more increases than available gaps. This case is not handled by the script."
-        )
-    elif rest <= 1:
-        result_label.config(
-            text=result_label.cget("text") + f'Make a new stitch after each {phrase}existing stitch.'
-        )
+    # the COMPLICATED part
+    # ####################
+    # disclaimer: for anyone who is looking into this:
+    # i really suck at math. if there is a logical or mathematical error, let me know ;)
+
+    # case 1: less increases than gaps, probably the more common part
+    if increases < gaps:
+        distribution = int(gaps / increases)
+        rest = gaps % increases
+
+        # phrase for UI
+        if distribution == 1:
+            phrase = ""
+        else:
+            phrase = f'{distribution}. '
+
+        if rest <= 1:
+            result_label.config(
+                text=result_label.cget("text") + f'Make a new stitch after each {phrase}existing stitch.'
+            )
+        else:
+            rest_distribution = round(increases / rest) + 1
+            result_label.config(
+                text=result_label.cget("text") +
+                f'In theory, you could make an increase after every {phrase}stitch.\n'
+                f'However, you would end up with {rest} stitches too much.\n'
+                f'So, follow the pattern of an increase after each {phrase}stitch,\n'
+                f'but after each {rest_distribution}. increase work one regular stitch more before you knit the next increase stitch.'
+            )
+    # case 2: more increases than gaps
     else:
-        rest_distribution = round(increases / rest) + 1
-        result_label.config(
-            text=result_label.cget("text") +
-            f'In theory, you could make an increase after every {phrase}stitch.\n'
-            f'However, you would end up with {rest} stitches too much.\n'
-            f'So, follow the pattern of an increase after each {phrase}stitch,\n'
-            f'but work one regular stitch more after each {rest_distribution}. increase.'
-        )
+        distribution = round(increases / gaps)
+        theoretical_distribution = distribution * gaps
+        rest = theoretical_distribution - increases
+
+        if rest < 0:
+            no_rest = False
+            many_few = "few"
+            more_less = "more"
+
+        elif rest > 0:
+            many_few = "many"
+            more_less = "less"
+            no_rest = False
+        else:
+            no_rest = True
+        rest_phrase = abs(rest)
+
+        # phrasing
+        plural = ""
+        if distribution > 1:
+            plural = "es"
+        increase_phrase = f'{distribution} new stitch{plural}'
+
+        if no_rest:
+            result_label.config(
+                text=result_label.cget("text") + f'Make {increase_phrase} after each existing stitch.'
+            )
+        else:
+            rest_distribution = abs(int(gaps / rest))
+            remainder = gaps % rest
+            if remainder == 0:
+                last_stitch_phrase = ""
+            else:
+                last_stitch_phrase = f'...\n But ahh, too bad, there is still {remainder} left. Just work it anywhere you like :)'
+            result_label.config(
+                text=result_label.cget("text") +
+                f'In theory, you could make {increase_phrase} after every existing stitch.\n'
+                f'However, you would end up with {theoretical_distribution} stitches, which is {rest_phrase} too {many_few}.\n'
+                f'So, follow the pattern of increasing {increase_phrase} after each existing stitch,\n'
+                f'but work one increase stitch {more_less} after each {rest_distribution}. regular stitch. \n'
+                f'{last_stitch_phrase}'
+            )
+
+
+# HELp
 
 
 def display_help():
@@ -101,6 +161,8 @@ def display_help():
     help_label = ttk.Label(help_window, text=help_text, justify="left")
     help_label.pack()
 
+
+# UI
 
 # Create the main application window
 app = tk.Tk()
